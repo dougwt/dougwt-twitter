@@ -9,7 +9,6 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
     """Returns a list of a user's most recent tweets in the form
     of dictionaries"""
 
-    DEBUG = False
     cache_file = 'dougwt_twitter_cache'
 
     # format the proper url for the api call
@@ -21,15 +20,17 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
                 'count'             : quantity
             }
 
-    cache_file = os.path.dirname(__file__) + '/' + cache_file 
-    timestamp = int(os.path.getmtime(cache_file))
-    expired = timestamp + cache_expiration
+    cache_file = os.path.dirname(__file__) + '/' + cache_file
     timenow = int(time.time())
-
-    if DEBUG:
-        print 'Timestamp : %d' % timestamp
-        print 'Expired   : %d' % expired 
-        print 'Currently : %d' % timenow
+    
+    if os.path.isfile(cache_file):
+        # read cache_file's timestamp if it exists
+        timestamp = int(os.path.getmtime(cache_file))
+        expired = timestamp + cache_expiration
+    else:
+        # uh oh cache_file doesn't exist
+        timestamp = 0
+        expired = 0
 
     if timenow < expired:
         # fetch the json string from cache
@@ -37,20 +38,18 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
         json_string = cache.read()
         cache.close
         
-        if DEBUG:
-            print 'CACHE'
     else:
         # fetch the json string using twitter's api
         url += urllib.urlencode(url_attr)
         json_string = urllib2.urlopen(url).read()
        
-        # cache the json string for later
-        cache = file(cache_file, 'w')
-        cache.write(json_string)
-        cache.close
-        
-        if DEBUG:
-            print 'API'
+        try:
+            # cache the json string for later
+            cache = file(cache_file, 'w')
+            cache.write(json_string)
+            cache.close
+        except IOError:
+            print 'Error: Unable to write to', cache_file
 
     # convert the json_string into an object
     json_data = json.loads(json_string)
@@ -73,4 +72,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
