@@ -10,6 +10,7 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
     of dictionaries"""
 
     DEBUG = False
+    cache_file = 'dougwt_twitter_cache'
 
     # format the proper url for the api call
     url = 'https://api.twitter.com/1/statuses/user_timeline.json?'
@@ -20,7 +21,8 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
                 'count'             : quantity
             }
 
-    timestamp = int(os.path.getmtime('dougwt_twitter_cache'))
+    cache_file = os.path.dirname(__file__) + '/' + cache_file 
+    timestamp = int(os.path.getmtime(cache_file))
     expired = timestamp + cache_expiration
     timenow = int(time.time())
 
@@ -31,7 +33,7 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
 
     if timenow < expired:
         # fetch the json string from cache
-        cache = file('dougwt_twitter_cache', 'r')
+        cache = file(cache_file, 'r')
         json_string = cache.read()
         cache.close
         
@@ -43,7 +45,7 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
         json_string = urllib2.urlopen(url).read()
        
         # cache the json string for later
-        cache = file('dougwt_twitter_cache', 'w')
+        cache = file(cache_file, 'w')
         cache.write(json_string)
         cache.close
         
@@ -71,3 +73,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
