@@ -9,8 +9,6 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
     """Returns a list of a user's most recent tweets in the form
     of dictionaries"""
 
-    cache_file = 'dougwt_twitter_cache'
-
     # format the proper url for the api call
     url = 'https://api.twitter.com/1/statuses/user_timeline.json?'
     url_attr = {'include_entities'  : 'true',
@@ -20,9 +18,17 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
                 'count'             : quantity
             }
 
-    cache_file = os.path.dirname(__file__) + '/' + cache_file
+    cache_dir = os.path.dirname(__file__) + '/dougwt_twitter_cache/' 
+    cache_file = cache_dir + username
     timenow = int(time.time())
-    
+   
+    if not os.path.exists(cache_dir):
+        # create cache directory since it doesn't exist
+        try:
+            os.makedirs(cache_dir)
+        except IOError:
+            print 'Error: Unable to create', cache_dir
+
     if os.path.isfile(cache_file):
         # read cache_file's timestamp if it exists
         timestamp = int(os.path.getmtime(cache_file))
