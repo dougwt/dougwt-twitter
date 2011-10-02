@@ -37,7 +37,6 @@ def fetch_tweets(username, quantity=1, cache_expiration=60):
         cache = file(cache_file, 'r')
         json_string = cache.read()
         cache.close
-        
     else:
         # fetch the json string using twitter's api
         url += urllib.urlencode(url_attr)
